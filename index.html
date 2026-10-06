@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<!--
+  COMPRAR PARA PERTENECER
+  Micrositio periodístico one-page — Periodismo de Inmersión, Universidad Anáhuac México
+  Equipo: Karol Aremy Vazquez Luna, Yunuen Lucía Pérez Moro, Jimena García Lupi
+
+  CÓMO ESTÁ ORGANIZADO ESTE ARCHIVO (léelo antes de editar):
+  1) <head>           → metadatos, fuentes de Google, Tailwind CDN + configuración de tema, Chart.js CDN
+  2) <body>
+     - .skip-link      → enlace de accesibilidad para saltar al contenido
+     - header.hero     → portada con título, subtítulo, autoras y botón de scroll
+     - nav.navbar       → barra de navegación fija con indicador de sección activa
+     - main
+        · #cronica      → crónica + reproductor de audio + citas + tarjetas de datos
+        · #video        → video entrevista + resumen ejecutivo
+        · #estadisticas → gráfico Chart.js + tarjetas de contexto territorial
+        · #galeria      → foto-reportaje con lightbox
+     - footer#creditos  → ficha técnica, metodología, fuentes, equipo
+     - #lightbox        → visor de pantalla completa para la galería (lo controla script.js)
+
+  Busca la etiqueta "SUSTITUIR" en los comentarios: señala cada lugar donde
+  debes reemplazar un texto, audio, video o fotografía de muestra por el
+  material final del equipo.
+-->
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comprar para pertenecer · El consumo como identidad en la Generación Z</title>
+  <meta name="description" content="Reportaje de inmersión: cómo el consumo de coleccionables, moda rápida y objetos de fandom se convirtió en una forma de identidad y comunidad para la Generación Z en México.">
+
+  <!-- Favicon simple en SVG (no requiere archivo aparte) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%8D%EF%B8%8F%3C/text%3E%3C/svg%3E">
+
+  <!-- ===== Tipografías (Google Fonts) ===== -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,900;1,500;1,600&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- ===== Tailwind CSS vía CDN (sin build step) ===== -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Extiende el tema de Tailwind con la paleta y tipografías del reportaje.
+    // Si cambias un color aquí, cámbialo también en las variables :root de styles.css
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg:      '#F9FAFB',
+            paper:   '#FFFFFF',
+            ink:     '#111827',
+            muted:   '#6B7280',
+            line:    '#E5E7EB',
+            accent:  '#4C1D95',
+            accent2: '#9D174D'
+          },
+          fontFamily: {
+            display: ['"Playfair Display"', 'serif'],
+            body:    ['"Merriweather"', 'serif'],
+            ui:      ['"Inter"', 'system-ui', 'sans-serif']
+          },
+          maxWidth: {
+            'read': '48rem'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- ===== Chart.js vía CDN (para la sección de Estadísticas) ===== -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+
+  <!-- Hoja de estilos propia: todo lo que Tailwind no resuelve bien -->
+  <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body class="bg-bg text-ink font-body antialiased">
+
+  <!-- Enlace de accesibilidad: permite saltar la portada con teclado -->
+  <a href="#cronica" class="skip-link">Saltar a la crónica</a>
+
+  <!-- =====================================================================
+       PORTADA / HERO
+       SUSTITUIR: la imagen de fondo es un marcador de Unsplash. Cámbiala
+       por una fotografía propia del equipo en la línea marcada abajo.
+  ====================================================================== -->
+  <header id="inicio" class="hero">
+    <div class="hero__media" aria-hidden="true">
+      <!-- SUSTITUIR: fotografía de portada (marcador de Unsplash) -->
+      <img
+        class="hero__img"
+        src="./assets/img/hero.jpg"
+        alt=""
+      >
+      <div class="hero__scrim"></div>
+    </div>
+
+    <div class="hero__content">
+      <p class="hero__kicker">Un reportaje de inmersión</p>
+      <h1 class="hero__title">Comprar para<br>pertenecer</h1>
+      <p class="hero__subtitle">El consumo como forma de identidad y comunidad en la Generación Z</p>
+
+      <div class="hero__byline">
+        <p class="hero__authors">Karol Aremy Vazquez Luna, Yunuen Lucía Pérez Moro y Jimena García Lupi</p>
+        <p class="hero__affiliation">Universidad Anáhuac México</p>
+      </div>
+    </div>
+
+    <a href="#cronica" class="hero__scroll-cue" aria-label="Desplázate para leer el reportaje">
+      <span></span>
+    </a>
+  </header>
+
+  <!-- =====================================================================
+       BARRA DE NAVEGACIÓN FIJA
+       El indicador deslizante bajo el enlace activo lo calcula script.js
+       con IntersectionObserver — no hace falta tocarlo al editar textos.
+  ====================================================================== -->
+  <nav id="navbar" class="navbar" aria-label="Secciones del reportaje">
+    <div class="navbar__inner">
+      <a href="#inicio" class="navbar__brand">Comprar para pertenecer</a>
+      <ul class="navbar__links" role="list">
+        <li><a href="#cronica" class="navbar__link" data-section="cronica">Crónica</a></li>
+        <li><a href="#video" class="navbar__link" data-section="video">Video</a></li>
+        <li><a href="#estadisticas" class="navbar__link" data-section="estadisticas">Estadísticas</a></li>
+        <li><a href="#galeria" class="navbar__link" data-section="galeria">Galería</a></li>
+        <li><a href="#creditos" class="navbar__link" data-section="creditos">Créditos</a></li>
+      </ul>
+      <span class="navbar__indicator" id="navIndicator" aria-hidden="true"></span>
+      <button class="navbar__toggle" id="navToggle" aria-expanded="false" aria-controls="navbarLinks" aria-label="Abrir menú de secciones">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- ===================================================================
+         CRÓNICA — pieza ancla
+         SUSTITUIR: el audio de la crónica (ruta más abajo). El texto ya es
+         la versión final entregada por el equipo; edítalo aquí si cambia.
+    ==================================================================== -->
+    <section id="cronica" class="section cronica">
+      <div class="cronica__container">
+
+        <p class="section-eyebrow">La crónica</p>
+        <h2 class="section-title">Lo que cabe en la palma de la mano</h2>
+        <p class="cronica__standfirst">
+          Entre vivienda inalcanzable y gratificación instantánea, una generación entera
+          está redefiniendo qué significa que algo sea verdaderamente suyo.
+        </p>
+
+        <!-- Módulo de audio accesible -->
+        <div class="audio-module">
+          <div class="audio-module__label">
+            <svg class="audio-module__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 9v6h4l5 5V4L8 9H4Z" fill="currentColor"/>
+              <path d="M16.5 8.5a5 5 0 0 1 0 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M19 6a8.5 8.5 0 0 1 0 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".6"/>
+            </svg>
+            <span>Escuchar esta crónica en audio</span>
+          </div>
+          <!-- SUSTITUIR: ./assets/audio/cronica-audio.mp3 por el archivo final -->
+          <audio class="audio-module__player" controls preload="none">
+            <source src="./assets/audio/cronica-audio.mp3" type="audio/mpeg">
+            Tu navegador no admite el elemento de audio. Puedes descargar el
+            archivo desde <a href="./assets/audio/cronica-audio.mp3">este enlace</a>.
+          </audio>
+        </div>
+
+        <!-- Texto de la crónica -->
+        <div class="prose-cronica">
+
+          <p class="cronica__lead">
+            Una figura coleccionable cabe en la palma de la mano. Un álbum de K-pop
+            o un libro ocupan apenas unos centímetros en la repisa y se convierten
+            en un elemento más de una colección en crecimiento. Una gorra de F1 se
+            puede llevar como el estandarte de una comunidad de aficionados. Son
+            objetos pequeños, más accesibles que una casa, un automóvil o un
+            terreno, pero que para muchos jóvenes representan algo más que una
+            compra: son algo propio.
+          </p>
+
+          <p>
+            En la generación Z la idea de poseer parece convivir con una
+            contradicción. Mientras por un lado adquirir una vivienda o construir
+            un patrimonio tradicional se percibe como algo cada vez más difícil,
+            por otro lado los cuartos se llenan de colecciones, ediciones
+            especiales, mercancía de artistas, figuras sorpresa y objetos ligados
+            a intereses específicos. No porque estos objetos sustituyan el hecho
+            de construir un patrimonio, sino porque permiten ejercer, en una
+            escala distinta, algo que ese patrimonio prometió a padres o abuelos
+            de esta generación: identidad, permanencia y la sensación de que algo
+            realmente les pertenece.
+          </p>
+
+          <p>
+            En torno a esta transformación también se suman otros factores. La
+            pandemia masificó las compras en línea, trasladó muchas comunidades
+            que antes tenían un espacio físico a espacios digitales y fortaleció
+            el consumo asociado al entretenimiento, la nostalgia y los fandoms.
+            Sin embargo, el fenómeno no comenzó ni terminó ahí: las redes
+            sociales, los algoritmos, las comunidades virtuales y un mercado que
+            ha optado por intensificar las ediciones limitadas forman parte de
+            una nueva relación entre consumo y pertenencia.
+          </p>
+
+          <blockquote class="pull-quote">
+            ¿Se trata de consumismo, de identidad, de comunidad o de una nueva
+            forma de entender lo que significa tener algo propio?
+          </blockquote>
+
+          <p>
+            Ya no solo existe la pregunta de por qué la generación Z se ha
+            vuelto tan consumista, sino que la discusión recae en qué es lo que
+            está buscando cuando compra.
+          </p>
+
+          <p>
+            En mi caso, los álbumes de K-pop no son simples discos: cada uno
+            está ligado a una pequeña parte de quién soy, forman parte de mi
+            identidad pero también de cómo he logrado relacionarme con otras
+            personas que comparten ese mismo gusto por este género musical. Pero
+            comprarlos no representa en lo más mínimo la sustitución de la
+            ambición por tener una casa o un auto; sí representan, en cambio,
+            que algo sea mío en el presente.
+          </p>
+
+          <p>
+            Esta experiencia no explica por sí sola el comportamiento de toda
+            una generación, pero sí ayuda a observar una tensión que atraviesa a
+            muchos jóvenes: mientras las formas tradicionales de propiedad
+            parecen cada vez más lejanas, las colecciones ocupan un lugar cada
+            vez más visible en la vida cotidiana. Y esa tensión coincide con una
+            realidad económica mucho más amplia.
+          </p>
+
+          <!-- Cifra destacada inline -->
+          <div class="stat-pull">
+            <span class="stat-pull__number">7.2M</span>
+            <p class="stat-pull__label">
+              jóvenes mexicanos de entre 18 y 29 años tienen como meta
+              financiera principal comprar o terminar de pagar una vivienda.
+              <cite>El Economista</cite>
+            </p>
+          </div>
+
+          <p>
+            El deseo de tener una casa no ha desaparecido: lo que se ha
+            transformado es la posibilidad de alcanzarla. Entre los principales
+            obstáculos, según el artículo <em>“Jóvenes en México quieren
+            comprar casa, pero el ahorro y los bajos salarios frenan la
+            meta”</em> de El Economista, se encuentran la falta de ahorro,
+            señalada por el 41.2% de los jóvenes, y los salarios insuficientes
+            o la falta de oportunidades laborales, mencionados por el 34.4%.
+
+          </p>
+
+          <!-- Tarjeta de datos intercalada -->
+          <aside class="data-card">
+            <p class="data-card__title">Lo que frena a los jóvenes para comprar vivienda</p>
+            <ul class="data-card__list">
+              <li><span class="data-card__value">41.2%</span> Falta de ahorro</li>
+              <li><span class="data-card__value">34.4%</span> Salarios insuficientes u oportunidades laborales</li>
+              <li><span class="data-card__value">24.4%</span> Otros factores</li>
+            </ul>
+            <p class="data-card__source">Fuente: El Economista. Ver el desglose completo en <a href="#estadisticas">Estadísticas</a>.</p>
+          </aside>
+
+          <!-- Callout destacado -->
+          <aside class="callout callout--accent2">
+            <p>Los precios de la vivienda crecen <strong>2.6 veces más rápido</strong> que los salarios en México.</p>
+            <cite>El Economista</cite>
+          </aside>
+
+          <div class="section-divider" role="separator" aria-hidden="true"><span></span></div>
+
+          <p>
+            Frente a esta realidad, una colección puede ofrecer una forma
+            inmediata y alcanzable de apropiación. Un álbum, una figura, un
+            libro o una prenda relacionada con un fandom pueden comprarse,
+            exhibirse, intercambiarse y formar parte de una identidad. Sin
+            embargo, aparece una segunda contradicción: aquello que ofrece
+            pertenencia también puede convertirse en una puerta al consumismo
+            constante. Las ediciones limitadas, las versiones múltiples de un
+            mismo producto, los lanzamientos exclusivos, las cajas sorpresa y
+            la lógica de completar una colección convierten el deseo de
+            pertenecer en una oportunidad comercial.
+          </p>
+
+          <p>
+            Para este punto, se deja de cuestionar únicamente qué busca la
+            generación Z cuando compra y se empieza a cuestionar también
+            cuánto de ese deseo es propio y cuánto ha sido estimulado por un
+            mercado que sabe convertir la identidad en mercancía. Tal es el
+            caso de los álbumes de K-pop con al menos cinco versiones
+            diferentes, o las figuras de vinil en cajas sorpresa que se
+            compran por lote con el objetivo de obtener el modelo deseado.
+          </p>
+
+          <p>
+            Pero no todas las colecciones nacen de una compra. Para algunas
+            personas, el valor de un objeto no depende del precio, de una
+            edición limitada o de la dificultad que conlleve conseguirlo. A
+            veces basta con que ese objeto guarde una historia.
+          </p>
+
+          <p>
+            Tal es el caso de Mía, quien en lugar de comprar un recuerdo como
+            un llavero o un imán cada vez que visita un lugar nuevo, recoge una
+            roca.
+          </p>
+
+          <blockquote class="quote-card">
+            <p>“Me gusta tener recuerdos físicos de los lugares a los que voy
+            y, en lugar de gastar en un llavero, un día decidí tomar una roca.
+            Poco a poco, sin darme cuenta, empecé a coleccionarlas.”</p>
+            <cite>Mía</cite>
+          </blockquote>
+
+          <p>
+            Con el paso del tiempo y de sus viajes, esas piedras se han
+            convertido en una colección que la devuelve a ese momento: cada una
+            pertenece a un sitio distinto y conserva un recuerdo único. Lo que
+            comenzó como una alternativa sencilla a los souvenirs terminó
+            convirtiéndose en una rutina.
+          </p>
+
+          <blockquote class="quote-card">
+            <p>“Al inicio me generaba mucha satisfacción saber que tenía algo
+            con qué recordar los viajes o experiencias que había vivido. Con el
+            tiempo se convirtió en un hábito y parte de mi rutina al viajar.”</p>
+            <cite>Mía</cite>
+          </blockquote>
+
+          <p>
+            Su colección demuestra que el deseo de conservar, recordar y
+            sentir que algo verdaderamente nos pertenece no necesariamente
+            conduce al consumo. El objeto sigue teniendo un valor emocional y
+            forma parte de una identidad.
+          </p>
+
+          <p class="cronica__closing">
+            Quizá el debate no esté en cuánto compra la generación Z, sino en
+            qué significa poseer para una generación que busca hacer suyo
+            aquello que todavía puede alcanzar.
+          </p>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         VIDEO — pieza audiovisual
+         SUSTITUIR: el archivo de video, el poster y los puntos clave.
+    ==================================================================== -->
+    <section id="video" class="section video-section">
+      <div class="section__container">
+        <p class="section-eyebrow">Pieza audiovisual</p>
+        <h2 class="section-title">La ansiedad de pertenecer, explicada por un especialista</h2>
+        <p class="section-intro">
+          Una entrevista de cinco minutos con un especialista sobre la ansiedad
+          de pertenencia y los hábitos de consumo de la Generación Z.
+        </p>
+
+        <div class="video-grid">
+          <div class="video-wrap">
+            <!-- SUSTITUIR: ./assets/video/entrevista-experto.mp4 y el poster -->
+            <video
+              class="video-wrap__player"
+              controls
+              preload="none"
+              poster="./assets/img/video-poster.jpg"
+            >
+              <source src="./assets/video/entrevista-experto.mp4" type="video/mp4">
+              Tu navegador no admite video HTML5. Puedes descargar la
+              entrevista desde <a href="./assets/video/entrevista-experto.mp4">este enlace</a>.
+            </video>
+          </div>
+
+          <aside class="video-summary">
+            <h3 class="video-summary__title">Resumen ejecutivo</h3>
+            <p class="video-summary__expert">Cristian García, psicólogo</p>
+            <ul class="video-summary__list">
+              <li>La necesidad de pertenencia es natural en todo ser humano y no exclusiva de la Generación Z, pero las redes sociales y los medios la intensifican en el momento actual.</li>
+              <li>Detrás del consumo hay dos tipos de necesidad: una funcional y otra psicológica —ligada a la pertenencia, el estatus y el consumo aspiracional— que es la que más pesa entre los jóvenes.</li>
+              <li>Influencers, artistas y músicos detonan el deseo de "ser como él": filas desde la madrugada por un termo de edición limitada ilustran un consumo motivado más por mostrarlo en redes que por el objeto en sí, incluso a costa de endeudarse.</li>
+              <li>Existe un conflicto psicológico entre los valores que dicen defender los jóvenes (como el cuidado ambiental) y la motivación por encajar, que termina justificando la compra impulsiva ("está de oferta", "una compra no hace la diferencia").</li>
+              <li>Las compras impulsivas buscan llenar vacíos emocionales: la exposición constante en redes sociales genera el deseo de un producto aunque, de entrada, no guste.</li>
+              <li>Frente a la dificultad de acceder a bienes propios —una casa, un coche—, consumir se vuelve una forma de sentirse parte de una comunidad; el especialista liga esto también a la situación económica del país.</li>
+              <li>Como alternativa recomienda actividades deportivas, trabajo colectivo o comunitario y el desarrollo de otras habilidades y creatividad, además de una pausa de 5 a 10 minutos antes de comprar para distinguir entre "lo necesito" y "lo quiero".</li>
+            </ul>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         ESTADÍSTICAS — Chart.js + contexto territorial
+    ==================================================================== -->
+    <section id="estadisticas" class="section stats-section">
+      <div class="section__container">
+        <p class="section-eyebrow">Datos de investigación</p>
+        <h2 class="section-title">Lo que dicen los números sobre la vivienda y el ahorro</h2>
+        <p class="section-intro">
+          Base de la investigación y contexto territorial sobre la brecha entre
+          el costo de la vivienda y los salarios de la Generación Z en México.
+        </p>
+
+        <div class="chart-card">
+          <p class="chart-card__title">¿Qué frena a los jóvenes de 18 a 29 años para comprar vivienda?</p>
+          <div class="chart-card__canvas-wrap">
+            <canvas id="housingChart" role="img" aria-label="Gráfico de barras: 41.2% falta de ahorro, 34.4% salarios insuficientes u oportunidades laborales, 24.4% otros factores"></canvas>
+          </div>
+          <p class="chart-card__source">Fuente: El Economista.</p>
+        </div>
+
+        <div class="context-grid">
+          <article class="context-card">
+            <p class="context-card__number">47%</p>
+            <p class="context-card__text">de la Generación Z en México considera que comprar una casa o un departamento está fuera de su alcance financiero.</p>
+            <p class="context-card__source">Estudio “Adulthood Across Generations” (Life Happens), vía Xataka México.</p>
+          </article>
+
+          <article class="context-card">
+            <p class="context-card__number">31.3%</p>
+            <p class="context-card__text">de los 37.8 millones de jóvenes que hay en México cuenta hoy con una vivienda propia.</p>
+            <p class="context-card__source">Comisión Nacional de Vivienda (Conavi).</p>
+          </article>
+
+          <article class="context-card">
+            <p class="context-card__number">$58,382</p>
+            <p class="context-card__text">pesos alcanzó el precio promedio del metro cuadrado de vivienda en mayo de 2026, 4.2% más que un año antes.</p>
+            <p class="context-card__source">Indicador Banorte de Precios de Vivienda (INBAPREVI).</p>
+          </article>
+
+          <article class="context-card">
+            <p class="context-card__number">44% / 24%</p>
+            <p class="context-card__text">es el contraste de dos décadas: los precios de vivienda subieron 44% por encima de la inflación mientras los ingresos laborales promedio cayeron 24%.</p>
+            <p class="context-card__source">Máximo Jaramillo-Molina, sociólogo y economista, vía La Razón.</p>
+          </article>
+        </div>
+      </div>
+
+      <!-- SUSTITUIR: imagen de contexto territorial por una propia si se desea -->
+      <figure class="stats-figure">
+        <img
+          src="./assets/img/estadisticas-cdmx.jpg"
+          alt="Vista aérea nocturna de la Ciudad de México, con edificios iluminados."
+          loading="lazy"
+        >
+        <figcaption>La Ciudad de México de noche. Para buena parte de la Generación Z, comprar un departamento en esta ciudad es una meta cada vez más lejana.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ===================================================================
+         GALERÍA / FOTO-REPORTAJE
+         SUSTITUIR: cada imagen y pie de foto por material propio del equipo.
+    ==================================================================== -->
+    <section id="galeria" class="section gallery-section">
+      <div class="section__container">
+        <p class="section-eyebrow">Foto-reportaje</p>
+        <h2 class="section-title">Galería</h2>
+        <p class="section-intro">Haz clic en cualquier fotografía para verla a pantalla completa.</p>
+      </div>
+
+      <div class="gallery-grid" id="galleryGrid">
+
+        <!-- SUSTITUIR: imagen 1 -->
+        <figure class="gallery-item">
+          <button class="gallery-item__trigger" type="button" data-index="0" aria-label="Ver en pantalla completa: colección de libros y objetos decorativos de Paulina M.">
+            <img
+              src="./assets/img/foto-01.jpg"
+              data-full="./assets/img/foto-01.jpg"
+              alt="Colección personal de libros y objetos decorativos."
+              data-caption="Una colección personal de libros y objetos decorativos muestra cómo también los espacios privados se convierten en lugares de expresión de gustos, identidad y pertenencia. — Paulina M."
+              loading="lazy"
+            >
+          </button>
+          <figcaption class="gallery-item__caption">
+            <p>Una colección personal de libros y objetos decorativos muestra cómo también los espacios privados se convierten en lugares de expresión de gustos, identidad y pertenencia.</p>
+            <cite>Paulina M.</cite>
+          </figcaption>
+        </figure>
+
+        <!-- SUSTITUIR: imagen 2 -->
+        <figure class="gallery-item">
+          <button class="gallery-item__trigger" type="button" data-index="1" aria-label="Ver en pantalla completa: colección de álbumes y photocards de K-pop de Cecilia G.">
+            <img
+              src="./assets/img/foto-02.jpg"
+              data-full="./assets/img/foto-02.jpg"
+              alt="Álbumes y photocards de K-pop acomodados como colección."
+              data-caption="Álbumes y photocards de K-pop integran una colección personal ligada al consumo cultural, la identidad y la pertenencia dentro de los fandoms. — Cecilia G."
+              loading="lazy"
+            >
+          </button>
+          <figcaption class="gallery-item__caption">
+            <p>Álbumes y photocards de K-pop integran una colección personal ligada al consumo cultural, la identidad y la pertenencia dentro de los fandoms.</p>
+            <cite>Cecilia G.</cite>
+          </figcaption>
+        </figure>
+
+        <!-- SUSTITUIR: imagen 3 -->
+        <figure class="gallery-item">
+          <button class="gallery-item__trigger" type="button" data-index="2" aria-label="Ver en pantalla completa: colección de gorras de Fórmula 1 de Vanessa F.">
+            <img
+              src="./assets/img/foto-03.jpg"
+              data-full="./assets/img/foto-03.jpg"
+              alt="Colección de gorras de Fórmula 1."
+              data-caption="Colección de gorras de Fórmula 1. Para algunos jóvenes, reunirlas se ha convertido en una forma más de construir su identidad. — Vanessa F."
+              loading="lazy"
+            >
+          </button>
+          <figcaption class="gallery-item__caption">
+            <p>Colección de gorras de Fórmula 1. Para algunos jóvenes, reunirlas se ha convertido en una forma más de construir su identidad.</p>
+            <cite>Vanessa F.</cite>
+          </figcaption>
+        </figure>
+
+        <!-- SUSTITUIR: imagen 4 -->
+        <figure class="gallery-item">
+          <button class="gallery-item__trigger" type="button" data-index="3" aria-label="Ver en pantalla completa: colección de objetos de Harry Potter de Daniela G.">
+            <img
+              src="./assets/img/foto-04.jpg"
+              data-full="./assets/img/foto-04.jpg"
+              alt="Objetos de la franquicia de Harry Potter en el estante de una habitación."
+              data-caption="Objetos de la franquicia de Harry Potter reunidos en el estante de una habitación, parte de una colección que acompaña el día a día. — Daniela G."
+              loading="lazy"
+            >
+          </button>
+          <figcaption class="gallery-item__caption">
+            <p>Objetos de la franquicia de Harry Potter reunidos en el estante de una habitación, parte de una colección que acompaña el día a día.</p>
+            <cite>Daniela G.</cite>
+          </figcaption>
+        </figure>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =====================================================================
+       CRÉDITOS / FICHA TÉCNICA
+  ====================================================================== -->
+  <footer id="creditos" class="footer">
+    <div class="section__container">
+      <p class="section-eyebrow section-eyebrow--light">Ficha técnica</p>
+      <h2 class="footer__title">Créditos</h2>
+
+      <div class="footer-grid">
+        <article class="footer-block">
+          <h3>Metodología</h3>
+          <p>
+            Reportaje de inmersión construido a partir de entrevistas
+            semiestructuradas con jóvenes de la Generación Z en la Ciudad de
+            México, una entrevista con un especialista en ansiedad de
+            pertenencia y hábitos de consumo, registro fotográfico y
+            audiovisual propio, y una revisión de datos públicos sobre
+            vivienda, ahorro y empleo juvenil.
+          </p>
+        </article>
+
+        <article class="footer-block">
+          <h3>Declaración ética</h3>
+          <p>
+            Los testimonios citados fueron compartidos de forma voluntaria
+            por sus protagonistas. Este reportaje no sustituye asesoría
+            financiera ni diagnóstico profesional sobre consumo o bienestar
+            emocional; su propósito es documentar, con interés público, cómo
+            el consumo funciona hoy como código de identidad y mecanismo de
+            integración social entre jóvenes mexicanos.
+          </p>
+        </article>
+
+        <article class="footer-block">
+          <h3>Fuentes de información</h3>
+          <ul>
+            <li>El Economista — “Jóvenes en México quieren comprar casa, pero el ahorro y los bajos salarios frenan la meta”.</li>
+            <li>Comisión Nacional de Vivienda (Conavi) — Situación habitacional de las personas jóvenes en México.</li>
+            <li>Indicador Banorte de Precios de Vivienda (INBAPREVI).</li>
+            <li>Máximo Jaramillo-Molina, sociólogo y economista, vía La Razón.</li>
+            <li>Estudio “Adulthood Across Generations” (Life Happens), vía Xataka México.</li>
+            <li>Testimonios y entrevistas propias del equipo de investigación.</li>
+          </ul>
+        </article>
+
+        <article class="footer-block">
+          <h3>Equipo</h3>
+          <ul>
+            <li>Karol Aremy Vazquez Luna</li>
+            <li>Yunuen Lucía Pérez Moro</li>
+            <li>Jimena García Lupi</li>
+          </ul>
+          <p class="footer-block__meta">Universidad Anáhuac México · Periodismo de Inmersión · NRC 10693</p>
+        </article>
+      </div>
+
+      <div class="footer-bottom">
+        <p>© 2026 Equipo de investigación. Reportaje elaborado con fines académicos para Periodismo de Inmersión, Universidad Anáhuac México.</p>
+        <a href="#inicio" class="footer-bottom__back">Volver arriba</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- =====================================================================
+       LIGHTBOX DE LA GALERÍA (controlado por script.js)
+  ====================================================================== -->
+  <div class="lightbox" id="lightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Visor de fotografías">
+    <button class="lightbox__close" id="lightboxClose" type="button" aria-label="Cerrar visor">&times;</button>
+    <button class="lightbox__nav lightbox__nav--prev" id="lightboxPrev" type="button" aria-label="Fotografía anterior">&#8249;</button>
+    <figure class="lightbox__figure">
+      <img class="lightbox__img" id="lightboxImg" src="" alt="">
+      <figcaption class="lightbox__caption" id="lightboxCaption"></figcaption>
+    </figure>
+    <button class="lightbox__nav lightbox__nav--next" id="lightboxNext" type="button" aria-label="Fotografía siguiente">&#8250;</button>
+  </div>
+
+  <script src="./script.js"></script>
+</body>
+</html>
